@@ -1,0 +1,31 @@
+$date
+	Mon Jul 03 19:45:32 2023
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module ALU_TB $end
+$scope module alu_dut $end
+$var wire 16 ! din [15:0] $end
+$var wire 32 " dout [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+bx "
+bx !
+$end
+#5
+b11111111111111111111111111111000 "
+b1111111111111000 !
+#10
+b1000 "
+b1000 !
+#900

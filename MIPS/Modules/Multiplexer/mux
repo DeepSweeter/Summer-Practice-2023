@@ -1,0 +1,95 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1539-g2693dd32b)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "D:\Icarus\iverilog\lib\ivl\system.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\va_math.vpi";
+S_000001b2f89a6150 .scope module, "ALU_TB" "ALU_TB" 2 1;
+ .timescale 0 0;
+v000001b2f8abba70_0 .var "din", 4 0;
+v000001b2f8abbb10_0 .var "din2", 4 0;
+v000001b2f8abbbb0_0 .net "dout", 4 0, L_000001b2f89ec420;  1 drivers
+v000001b2f8abbc50_0 .var "sel", 0 0;
+S_000001b2f8abcff0 .scope module, "alu_dut" "MUX_5BIT" 2 16, 3 1 0, S_000001b2f89a6150;
+ .timescale 0 0;
+    .port_info 0 /INPUT 5 "in1";
+    .port_info 1 /INPUT 5 "in2";
+    .port_info 2 /INPUT 1 "sel";
+    .port_info 3 /OUTPUT 5 "dout";
+v000001b2f89732e0_0 .net "dout", 4 0, L_000001b2f89ec420;  alias, 1 drivers
+v000001b2f8972ef0_0 .net "in1", 4 0, v000001b2f8abba70_0;  1 drivers
+v000001b2f8ab9320_0 .net "in2", 4 0, v000001b2f8abbb10_0;  1 drivers
+v000001b2f89a6470_0 .net "sel", 0 0, v000001b2f8abbc50_0;  1 drivers
+L_000001b2f89ec420 .functor MUXZ 5, v000001b2f8abba70_0, v000001b2f8abbb10_0, v000001b2f8abbc50_0, C4<>;
+S_000001b2f8abd180 .scope task, "write" "write" 2 44, 2 44 0, S_000001b2f89a6150;
+ .timescale 0 0;
+v000001b2f89a6510_0 .var "dint", 5 0;
+v000001b2f8abd310_0 .var "dint2", 5 0;
+v000001b2f8abd3b0_0 .var "selt", 0 0;
+TD_ALU_TB.write ;
+    %load/vec4 v000001b2f89a6510_0;
+    %pad/u 5;
+    %store/vec4 v000001b2f8abba70_0, 0, 5;
+    %load/vec4 v000001b2f8abd310_0;
+    %pad/u 5;
+    %store/vec4 v000001b2f8abbb10_0, 0, 5;
+    %load/vec4 v000001b2f8abd3b0_0;
+    %store/vec4 v000001b2f8abbc50_0, 0, 1;
+    %end;
+S_000001b2f89a62e0 .scope module, "MUX_32BIT" "MUX_32BIT" 3 10;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "in1";
+    .port_info 1 /INPUT 32 "in2";
+    .port_info 2 /INPUT 1 "sel";
+    .port_info 3 /OUTPUT 32 "dout";
+v000001b2f8abbcf0_0 .net "dout", 31 0, L_000001b2f89ecd80;  1 drivers
+o000001b2f89ab1d8 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v000001b2f8abbd90_0 .net "in1", 31 0, o000001b2f89ab1d8;  0 drivers
+o000001b2f89ab208 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v000001b2f8abbe30_0 .net "in2", 31 0, o000001b2f89ab208;  0 drivers
+o000001b2f89ab238 .functor BUFZ 1, C4<z>; HiZ drive
+v000001b2f8abbed0_0 .net "sel", 0 0, o000001b2f89ab238;  0 drivers
+L_000001b2f89ecd80 .functor MUXZ 32, o000001b2f89ab1d8, o000001b2f89ab208, o000001b2f89ab238, C4<>;
+    .scope S_000001b2f89a6150;
+T_1 ;
+    %vpi_call 2 22 "$dumpfile", "dump.vcd" {0 0 0};
+    %vpi_call 2 23 "$dumpvars", 32'sb00000000000000000000000000000000, S_000001b2f8abcff0 {0 0 0};
+    %end;
+    .thread T_1;
+    .scope S_000001b2f89a6150;
+T_2 ;
+    %delay 900, 0;
+    %vpi_call 2 32 "$finish" {0 0 0};
+    %end;
+    .thread T_2;
+    .scope S_000001b2f89a6150;
+T_3 ;
+    %delay 5, 0;
+    %pushi/vec4 56, 0, 6;
+    %store/vec4 v000001b2f89a6510_0, 0, 6;
+    %pushi/vec4 8, 0, 6;
+    %store/vec4 v000001b2f8abd310_0, 0, 6;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v000001b2f8abd3b0_0, 0, 1;
+    %fork TD_ALU_TB.write, S_000001b2f8abd180;
+    %join;
+    %delay 5, 0;
+    %pushi/vec4 56, 0, 6;
+    %store/vec4 v000001b2f89a6510_0, 0, 6;
+    %pushi/vec4 8, 0, 6;
+    %store/vec4 v000001b2f8abd310_0, 0, 6;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v000001b2f8abd3b0_0, 0, 1;
+    %fork TD_ALU_TB.write, S_000001b2f8abd180;
+    %join;
+    %end;
+    .thread T_3;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "testbench.sv";
+    "mux.sv";
