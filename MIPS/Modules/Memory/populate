@@ -1,0 +1,46 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1539-g2693dd32b)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "D:\Icarus\iverilog\lib\ivl\system.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\va_math.vpi";
+S_0000024f89922ae0 .scope module, "FileDataReader" "FileDataReader" 2 1;
+ .timescale 0 0;
+v0000024f89956e40 .array/s "data", 7 0, 31 0;
+v0000024f89922c70_0 .var/i "i", 31 0;
+    .scope S_0000024f89922ae0;
+T_0 ;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0000024f89922c70_0, 0, 32;
+T_0.0 ;
+    %load/vec4 v0000024f89922c70_0;
+    %cmpi/s 8, 0, 32;
+    %jmp/0xz T_0.1, 5;
+    %load/vec4 v0000024f89922c70_0;
+    %muli 4, 0, 32;
+    %ix/getv/s 4, v0000024f89922c70_0;
+    %store/vec4a v0000024f89956e40, 4, 0;
+    ; show_stmt_assign_vector: Get l-value for compressed += operand
+    %load/vec4 v0000024f89922c70_0;
+    %pushi/vec4 1, 0, 32;
+    %add;
+    %store/vec4 v0000024f89922c70_0, 0, 32;
+    %jmp T_0.0;
+T_0.1 ;
+    %vpi_call 2 15 "$writememb", "instr.txt", v0000024f89956e40 {0 0 0};
+    %vpi_call 2 16 "$writememh", "memory_hex.txt", v0000024f89956e40 {0 0 0};
+    %end;
+    .thread T_0;
+    .scope S_0000024f89922ae0;
+T_1 ;
+    %vpi_call 2 21 "$dumpfile", "waveform.vcd" {0 0 0};
+    %end;
+    .thread T_1;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "testbench.sv";

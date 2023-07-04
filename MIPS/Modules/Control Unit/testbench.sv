@@ -4,13 +4,14 @@ module ALU_TB;
 
 
 reg[5:0] opcode; // MUX5
-wire MemtoReg,MemWrite,Branch,ALUSrc,RegDst,RegWrite;
+wire MemtoReg,MemWrite,Branch,ALUSrc,RegDst,RegWrite, Jump;
+wire [1:0] ALUOp;
   
 
   
 
   //MUX_32BIT alu_dut(din, din2, sel, dout);
-  CONTROL_UNIT alu_dut(opcode, MemtoReg,MemWrite,Branch,ALUSrc,RegDst,RegWrite);
+  CONTROL_UNIT alu_dut(opcode, Jump, ALUOp, MemtoReg, MemWrite,Branch,ALUSrc,RegDst,RegWrite);
 
 
   
@@ -48,6 +49,7 @@ wire MemtoReg,MemWrite,Branch,ALUSrc,RegDst,RegWrite;
     #5 write(6'b101_011);
     #5 write(6'b000_100);
     #5 write(6'b001_000);
+    #5 write(6'b000_010);
 
 
 

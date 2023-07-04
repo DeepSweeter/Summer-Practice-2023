@@ -1,0 +1,58 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1539-g2693dd32b)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "D:\Icarus\iverilog\lib\ivl\system.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "D:\Icarus\iverilog\lib\ivl\va_math.vpi";
+S_0000024b8d2160b0 .scope module, "FileDataReader" "FileDataReader" 2 1;
+ .timescale 0 0;
+v0000024b8d3392f0_0 .var "addr", 31 0;
+v0000024b8d339390_0 .net "instr", 31 0, L_0000024b8d33aaa0;  1 drivers
+S_0000024b8d216240 .scope module, "im_dut" "INSTRUCTION_MEMORY" 2 11, 3 1 0, S_0000024b8d2160b0;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "addr";
+    .port_info 1 /OUTPUT 32 "instr";
+L_0000024b8d33aaa0 .functor BUFZ 32, L_0000024b8d33a8c0, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+v0000024b8d1e3300_0 .net *"_ivl_0", 31 0, L_0000024b8d33a8c0;  1 drivers
+v0000024b8d1e2f30_0 .net *"_ivl_2", 31 0, L_0000024b8d33aa00;  1 drivers
+v0000024b8d214f20_0 .net *"_ivl_4", 29 0, L_0000024b8d33a960;  1 drivers
+L_0000024b8d259848 .functor BUFT 1, C4<00>, C4<0>, C4<0>, C4<0>;
+v0000024b8d2163d0_0 .net *"_ivl_6", 1 0, L_0000024b8d259848;  1 drivers
+v0000024b8d216470_0 .net "addr", 31 0, v0000024b8d3392f0_0;  1 drivers
+v0000024b8d33be70_0 .net "instr", 31 0, L_0000024b8d33aaa0;  alias, 1 drivers
+v0000024b8d33bf10 .array "mem", 31 0, 31 0;
+L_0000024b8d33a8c0 .array/port v0000024b8d33bf10, L_0000024b8d33aa00;
+L_0000024b8d33a960 .part v0000024b8d3392f0_0, 2, 30;
+L_0000024b8d33aa00 .concat [ 30 2 0 0], L_0000024b8d33a960, L_0000024b8d259848;
+    .scope S_0000024b8d216240;
+T_0 ;
+    %vpi_call 3 7 "$readmemb", "D:\134Facultate\134AMD\134Summer Practice 2023\134MIPS\134Modules\134Memory\134instr.txt", v0000024b8d33bf10 {0 0 0};
+    %end;
+    .thread T_0;
+    .scope S_0000024b8d2160b0;
+T_1 ;
+    %vpi_call 2 26 "$dumpfile", "dump.vcd" {0 0 0};
+    %vpi_call 2 27 "$dumpvars", 32'sb00000000000000000000000000000000, S_0000024b8d216240 {0 0 0};
+    %end;
+    .thread T_1;
+    .scope S_0000024b8d2160b0;
+T_2 ;
+    %delay 5, 0;
+    %pushi/vec4 18, 0, 32;
+    %store/vec4 v0000024b8d3392f0_0, 0, 32;
+    %delay 5, 0;
+    %pushi/vec4 22, 0, 32;
+    %store/vec4 v0000024b8d3392f0_0, 0, 32;
+    %delay 100, 0;
+    %vpi_call 2 34 "$finish" {0 0 0};
+    %end;
+    .thread T_2;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "testbench.sv";
+    "instruction_memory.sv";
