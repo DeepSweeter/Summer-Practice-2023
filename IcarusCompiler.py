@@ -16,7 +16,7 @@ if __name__ == '__main__':
         arguments += f"{sys.argv[i]} "
     try:
         subprocess.Popen(f"iverilog -o {sys.argv[1].split('.')[0]} {arguments} ",  stderr=subprocess.STDOUT).wait()
-        subprocess.Popen(f"vvp {sys.argv[1].split('.')[0]}", stderr=subprocess.STDOUT).wait()
+        subprocess.Popen(f"vvp -N {sys.argv[1].split('.')[0]}", stderr=subprocess.STDOUT).wait()
     except subprocess.CalledProcessError as e:
         print("Eroare la compilare icarus: " + e)
     for file in os.listdir(currentFolder):
