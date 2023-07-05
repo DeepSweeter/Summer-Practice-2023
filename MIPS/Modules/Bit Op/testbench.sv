@@ -10,7 +10,7 @@ wire [31:0] dout;
   
   //SIGN_EXTEND alu_dut(din, dout);
   //ADDER alu_dut(din, din2, dout);
-  SHIFTER alu_dut(din, dout);
+  SHIFTER #(.IN_LEN(26), .OUT_LEN(28)) alu_dut (.in(din), .dout(dout));
 
   
   initial
@@ -42,7 +42,7 @@ wire [31:0] dout;
 //   endtask
 
 
-    task writeSH(input [31:0] dint);
+    task writeSH(input [26:0] dint);
     begin
       din = dint;
     end
@@ -57,7 +57,7 @@ wire [31:0] dout;
 
     //#5 writeADD(32'd10, 32'd4);
 
-    #5 writeSH(-32'd8);
+    #5 writeSH(-26'd8);
 
 
   end
