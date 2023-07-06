@@ -7,7 +7,10 @@ module ALU(input [2:0] ALUControl,
     always@(*) begin
         case(ALUControl)
              3'b010: ALUResult = SrcA + SrcB;
-             3'b110: ALUResult = SrcA - SrcB;
+             3'b110:begin
+                 ALUResult = SrcA - SrcB;
+                 Zero = SrcA - SrcB == 0? 1: 0;
+             end
              3'b000: ALUResult = SrcA & SrcB;
              3'b001: ALUResult = SrcA | SrcB;
              3'b111: Zero = SrcA - SrcB == 0? 1: 0;

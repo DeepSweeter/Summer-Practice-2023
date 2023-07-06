@@ -1,11 +1,15 @@
 module PC(
     input [31:0] in,
     input clk,
+  input reset,
     output reg [31:0] dout);
 
-    always@(posedge clk) 
+  always@(posedge clk, posedge reset) 
         begin
-            dout = in;
+          if(reset)
+            dout <= 32'b0;
+          else
+            dout <= in;
         end
     
 endmodule

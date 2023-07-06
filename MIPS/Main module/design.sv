@@ -7,18 +7,18 @@
 `include "pc.sv"
 `include "register_file.sv"
 
-module MIPS(input clk);
+module MIPS(input clk, input reset);
 
     //Data path
     //PC
     wire [31:0] pcout; 
 
     //Instruction memory
-    wire [31:0] instruction
+    wire [31:0] instruction;
     wire [5:0] opcode;
     wire [4:0] rs, rt, rd;
     wire [15:0] immediate;
-    wire [15:0] funct;
+    wire [5:0] funct;
     
     //Register bank
     wire [31:0] rd1, rd2;
@@ -41,24 +41,38 @@ module MIPS(input clk);
     wire [31:0] sign_ex_out;
     wire [31:0] add_pc4_out;
     wire [31:0] shift_adder_out;
+    wire [27:0] shift_jump_out;
+    wire [31:0] add_address_out;
+    wire sel_mux_1;
+    wire [31:0] sel_mux_1_out;
+    wire[31:0] jump_address;
+    wire[31:0] sel_mux_2_out;
 
     //Control
     wire RegDst, Jump, Branch, MemToReg, ALUSrc, MemWrite, RegWrite; //MemRead??
     wire [1:0] ALUOp;
 
 
-    //Instances
-
-    PC prog_counter(.in(muxout), .clk(clk), .dout(pcout));
-    INSTRUCTION_MEMORY instr_mem(.addr(pcout), .instr(instruction));
+  //Assigns
+  
     assign opcode = instruction[31:26];
     assign rs = instruction[25:21];
     assign rt = instruction[20:16];
     assign rd = instruction[15:11];
     assign immediate = instruction[15:0];
-    assign funct = instr[5:0];
+    assign funct = instruction[5:0];
+  	
+  	assign sel_mux_1 = zeroflag & Branch;
+    assign jump_address ={add_pc4_out[31:28],shift_jump_out[27:0]}; 
+      
+      
+    //Instances
 
-    CONTROL_UNIT(.opcode(opcode), .Jump(Jump), .ALUOp(ALUOp), .MemtoReg(MemToReg), .MemWrite(MemWrite), .Branch(Branch), .ALUSrc(ALUSrc), .RegDst(RegDst), .RegWrite(RegWrite));
+    PC prog_counter(.in(sel_mux_2_out), .clk(clk), .reset(reset), .dout(pcout));
+    INSTRUCTION_MEMORY instr_mem(.addr(pcout), .instr(instruction));
+
+
+    CONTROL_UNIT con_unit(.opcode(opcode), .Jump(Jump), .ALUOp(ALUOp), .MemtoReg(MemToReg), .MemWrite(MemWrite), .Branch(Branch), .ALUSrc(ALUSrc), .RegDst(RegDst), .RegWrite(RegWrite));
 
     MUX_5BIT mux_reg_bank(.in1(rt), .in2(rd), .sel(RegDst), .dout(mux_regbank_out));
     REGISTER_BANK reg_bank(.a1(rs), .a2(rt), .a3(mux_regbank_out), .wd3(mux_datamem_out), .we3(RegWrite), .clk(clk), .rd1(rd1), .rd2(rd2));
@@ -74,9 +88,15 @@ module MIPS(input clk);
 
     ADDER add_pc4(.op1(pcout), .op2(32'd4), .dout(add_pc4_out));
     //shifter parametrizat
-
-    
+	
+  	SHIFTER #(.IN_LEN(26), .OUT_LEN(28))shift_jump(.in(instruction[25:0]), .dout(shift_jump_out));  
+  	
+    ADDER add_address(.op1(shift_adder_out), .op2(add_pc4_out), .dout(add_address_out));
     SHIFTER shift_adder(.in(sign_ex_out), .dout(shift_adder_out));
+  
+    MUX_32BIT mux_adder_1(.in1(add_pc4_out), .in2(add_address_out), .sel(sel_mux_1), .dout(sel_mux_1_out));
+  
+    MUX_32BIT mux_adder_2(.in1(sel_mux_1_out), .in2(jump_address), .sel(Jump), .dout(sel_mux_2_out));
 
 
 endmodule

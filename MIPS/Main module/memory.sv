@@ -17,9 +17,9 @@ module DATA_MEMORY(
     input clk,
     output [31:0] dout
 );
-    reg [31:0] mem [0:253];
+  reg [31:0] mem [0:255];
 
-    assign rd = mem[din>>2];
+    assign dout = mem[din>>2];
 
     always@(posedge clk)
         if(we)

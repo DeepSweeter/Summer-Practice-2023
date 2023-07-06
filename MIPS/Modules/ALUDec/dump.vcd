@@ -1,5 +1,5 @@
 $date
-	Sun Jul  2 09:19:58 2023
+	Wed Jul 05 20:49:56 2023
 $end
 $version
 	Icarus Verilog
@@ -15,6 +15,9 @@ $var reg 3 # alucontrol [2:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
 #0
 $dumpvars
 bx #
@@ -42,5 +45,6 @@ b1x !
 b1 #
 b100101 "
 #49
+b111 #
 b101010 "
 #900
