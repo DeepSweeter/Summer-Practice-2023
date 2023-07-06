@@ -20,7 +20,7 @@ module REGISTER_BANK(
 
   always@(posedge clk) begin
     if(we3)
-      registers[a3] = wd3;
+      registers[a3] = (a3 != 0)? wd3 :0;
 
   end
    

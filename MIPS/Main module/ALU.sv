@@ -13,7 +13,7 @@ module ALU(input [2:0] ALUControl,
              end
              3'b000: ALUResult = SrcA & SrcB;
              3'b001: ALUResult = SrcA | SrcB;
-             3'b111: Zero = SrcA - SrcB == 0? 1: 0;
+             3'b111: ALUResult = SrcA < SrcB? 1: 0;
              default: begin
                 Zero = 1'bx;
                 ALUResult = 32'bx;
