@@ -4,7 +4,7 @@ module PC(
   input reset,
     output reg [31:0] dout);
 
-  always@(posedge clk, posedge reset) 
+  always@(negedge clk, posedge reset) 
         begin
           if(reset)
             dout <= 32'b0;
