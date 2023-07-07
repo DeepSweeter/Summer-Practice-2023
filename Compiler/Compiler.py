@@ -71,7 +71,6 @@ def compile(codes):
         binary_code = ""
         addr = code[0]
         instr_split = code[1].lower().split(" ")
-        print(instr_split[0])
         
         if instr_split[0] in R_TYPES:
             opcode = "000000"
@@ -104,7 +103,7 @@ def compile(codes):
             opcode = "000100"
             rs = registers[instr_split[1]]
             rt = registers[instr_split[2]]
-            immediate = Bits(int=(labels[instr_split[3]] - addr), length=16).bin
+            immediate = Bits(int=(labels[instr_split[3]] - addr-1), length=16).bin
             binary_code = opcode + "_"+ rs + "_" + rt + "_" + immediate + "\n"
         elif instr_split[0] == "j":
             opcode="000010"

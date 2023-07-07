@@ -32,12 +32,28 @@ for(i = 0 ; i < 32; i= i+1)
   $dumpvars(1,mips_dut.rt);
   $dumpvars(1,mips_dut.mux_datamem_out);
   $dumpvars(1, mips_dut.sel_mux_2_out);
-  $dumpvars(1, mips_dut.reset);
   $dumpvars(1, mips_dut.pcout);
   $dumpvars(1, mips_dut.sel_mux_1_out);
   $dumpvars(1, mips_dut.add_address_out);
   $dumpvars(1, mips_dut.jump_address);
   $dumpvars(1, mips_dut.zeroflag);
+  $dumpvars(1, mips_dut.opcode);
+  $dumpvars(1, mips_dut.funct);
+  $dumpvars(1, mips_dut.ALUConOut);
+  $dumpvars(1, mips_dut.ALUOp);
+  $dumpvars(1, mips_dut.instruction);
+
+  //Control unit variables
+  $dumpvars(1, mips_dut.RegDst);
+  $dumpvars(1, mips_dut.Jump);
+  $dumpvars(1, mips_dut.Branch);
+  $dumpvars(1, mips_dut.MemToReg);
+  $dumpvars(1, mips_dut.ALUSrc);
+  $dumpvars(1, mips_dut.MemWrite);
+  $dumpvars(1, mips_dut.RegWrite);
+  $dumpvars(1, mips_dut.ALUOp);
+
+
 
 
 

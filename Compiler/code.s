@@ -8,8 +8,8 @@ add $t1, $t1, $t0
 beq $t1, $t2, END
 j FOR
 END:
-sub $t4, $t1, $t2
-and $t5, $t1, $t2
-or $t6, $t1, $t2
-slt $t5, $t0, $t1
+sub $t4, $t0, $t1
+and $t5, $t0, $t1
+or $t6, $t0, $t2
+slt $t5, $t0, $t2
 addi $zero, $zero, 1

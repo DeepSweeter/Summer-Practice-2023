@@ -1,0 +1,47 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Fri Jul 07 10:14:50 2023
+[*]
+[dumpfile] "D:\Facultate\AMD\Summer Practice 2023\MIPS\Main module\dump.vcd"
+[dumpfile_mtime] "Fri Jul 07 10:05:05 2023"
+[dumpfile_size] 18079
+[savefile] "D:\Facultate\AMD\Summer Practice 2023\MIPS\Main module\presentFile.gtkw"
+[timestart] 17
+[size] 1000 600
+[pos] -1 -1
+*-4.900445 55 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] MIPS_TESTBENCH.
+[treeopen] MIPS_TESTBENCH.mips_dut.
+[sst_width] 197
+[signals_width] 276
+[sst_expanded] 1
+[sst_vpaned_height] 153
+@28
+MIPS_TESTBENCH.clk
+@22
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[0][31:0]
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[8][31:0]
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[9][31:0]
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[10][31:0]
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[11][31:0]
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[12][31:0]
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[13][31:0]
+MIPS_TESTBENCH.mips_dut.reg_bank.\registers[14][31:0]
+MIPS_TESTBENCH.mips_dut.dat_mem.\mem[3][31:0]
+@29
+MIPS_TESTBENCH.mips_dut.Jump
+@28
+MIPS_TESTBENCH.mips_dut.ALUOp[1:0]
+MIPS_TESTBENCH.mips_dut.MemToReg
+MIPS_TESTBENCH.mips_dut.MemWrite
+MIPS_TESTBENCH.mips_dut.Branch
+MIPS_TESTBENCH.mips_dut.ALUSrc
+MIPS_TESTBENCH.mips_dut.RegDst
+MIPS_TESTBENCH.mips_dut.RegWrite
+@22
+MIPS_TESTBENCH.mips_dut.pcout[31:0]
+MIPS_TESTBENCH.mips_dut.funct[5:0]
+MIPS_TESTBENCH.mips_dut.opcode[5:0]
+MIPS_TESTBENCH.mips_dut.sel_mux_2_out[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
