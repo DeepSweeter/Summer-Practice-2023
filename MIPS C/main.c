@@ -1,106 +1,9 @@
-#include <stdio.h>
-#include<sys/wait.h>
-#include<assert.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<string.h>
-
-int numberOfLines(FILE *fp){
-    int count = 0;
-    char c;
-    for (c = getc(fp); c != EOF; c = getc(fp))
-        if (c == '\n') // Increment count if this character is newline
-            count = count + 1;
-    return count - 1;
-}
-
-void readlines(char ***instructions, int n, FILE *fp){
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
-    int i = 0;
-
-    *instructions = (char**)malloc(n* sizeof(char*));
-
-    while((read = getline(&line, &len, fp)) != -1){
-        if(strstr(line, "//") == NULL)
-        {
-            (*instructions)[i] = (char*)malloc(read* sizeof(char));
-            strncpy((*instructions)[i], line, read);
-            (*instructions)[i][read-1] = '\0';
-            i++;
-        }
-    }
-    if(line)
-        free(line);
-
-}
-
-void intToString(int* numbers, int n, char** instruction){
-    char instString[50] = {'\0'};
-    char interm[20];
-
-    for(int i =0; i< n; i++)
-    {
-        sprintf(interm, "%d", numbers[i]);
-        strcat(instString, interm);
-        if(i != n-1)
-            strcat(instString,"_");
-    }
-
-    (*instruction) = (char*)malloc(strlen(instString) * sizeof(char));
-    (*instruction)[strlen(instString)] = '\0';
-    strncpy((*instruction),instString, strlen(instString));
-
-}
-
-
-int split(char *instruction, char *** tokens){
-    int i, count = 0;
-    for (i=0; i < strlen(instruction); i++)
-    {
-        if(instruction[i] == '_'){
-            count ++;
-        }
-    }
-        // count += (instruction[i] == "_");
-    count++;
-
-    char * token = strtok(instruction, "_");
-    i=0;
-    *tokens = (char **) malloc(count * sizeof(char *));
-    while(token != NULL){
-        (*tokens)[i] = (char *) malloc(strlen(token) * sizeof(char));
-        strncpy((*tokens)[i], token, strlen(token));
-        (*tokens)[i][strlen(token)] = '\0';
-        i++;
-        token= strtok(NULL, "_");
-    }
-
-    if(token)
-        free(token);
-
-    return count;
-}
-
-long  stringToInt(char *number, int base){
-    long result;
-    //char *pEnd;
-
-    result = strtol(number, NULL, base);
-    if(strlen(number)>=16){
-        if(result >=0x7fff){
-            result = result | 0xffffffffffff0000;        
-        }
-    }
-    return result;
-}
+#include"header.h"
 
 
 int main(){
     int pipes[4][2];
     pid_t procid[4];
-    //int current_id = 0;
     for(int i = 0; i < 4; ++i){
         if(pipe(pipes[i]) == -1){
             perror("pipe");
@@ -120,7 +23,7 @@ int main(){
         close(pipes[2][1]);
         close(pipes[3][1]);
 
-        int data = 7;
+        int pc = 0;
         char **instructions;
         FILE *fp;
         fp = fopen("instr.txt", "r");
@@ -132,21 +35,30 @@ int main(){
         int count = numberOfLines(fp);
         rewind(fp);
         readlines(&instructions, count, fp);
-        write(pipes[0][1], instructions[0], strlen(instructions[0]) + 1);
-
+        write(pipes[0][1], instructions[pc], strlen(instructions[pc]) + 1);
+        printf("Instruction fetch:\n\tInstruction address: %d\n\tInstruction: %s\n",0, instructions[0]);
         while(1){
 
-            //close(pipes[0][1]);
-
             sleep(4);
-            read(pipes[3][0], &data, sizeof(int));
-            data++;
+            read(pipes[3][0], &pc, sizeof(int));
+            if(pc > count-1){
+                printf("Instruction fetch: All instructions were executed\n");
+                char br [] = "break";
+                write(pipes[0][1], br, strlen(br)+1);
+                break;
+            }
+            printf("Instruction fetch:\n\tInstruction address: %d\n\tInstruction: %s\n",pc, instructions[pc]);
 
-            printf("First child: %d\n", data);
+            write(pipes[0][1], instructions[pc], strlen(instructions[pc]) + 1);
+
+            //printf("First child: %d\n", data);
         }
+        close(pipes[0][1]);
+        close(pipes[3][0]);
         
         return 0;
     }
+    
     //Instruction decode
     procid[1] = fork();
     if(procid[1] == 0)
@@ -166,11 +78,17 @@ int main(){
         sleep(1);
 
         read(pipes[0][0], &data, sizeof(data));
-        count = split(data,&tokens);
+        printf("Instruction Decode\n\tInstruction received: %s\n", data);
+
+        if(!strcmp(data , "break")){
+            printf("Instruction decode: All instructions were executed\n");
+            write(pipes[1][1], data, strlen(data)+1);
+            break;
+        }
+
+        count = split(data, &tokens);
 
         
-        // close(pipes[1][1]);
-        // close(pipes[0][0]);
         decoded = (int *)malloc(count * sizeof(int));
 
 
@@ -181,7 +99,7 @@ int main(){
         }
 
         intToString(decoded, count, &instr);
-        printf("New instruction: %s\n", instr);
+        printf("\tDecoded instruction: %s\n", instr);
 
         write(pipes[1][1], instr, strlen(instr)+1);
 
@@ -195,31 +113,150 @@ int main(){
         free(instr);
 
         }
+        close(pipes[1][1]);
+        close(pipes[0][0]);
+
         return 0;
     }
+
     //Execute
     procid[2] = fork();
     if(procid[2] == 0)
     {
-        while(1){
-        char data[40];
+        //Closing pipes
         close(pipes[0][0]);
         close(pipes[0][1]);
         close(pipes[1][1]);
         close(pipes[2][0]);
         close(pipes[3][0]);
         close(pipes[3][1]);
+
+        //Processor logic
+        int registers[32] = {0};
+        int memory[256];
+        int rs, rt, rd;
+        int immd;
+        int funct;
+        int opcode;
+        int pcout;
+        int memAddr;
+        //Transfer data
+        char data[40];
+        char **tokens;
+        int count;
+        int *intTokens;
+        char br[6];
+
+        while(1){
         sleep(2);
 
         read(pipes[1][0], &data, 40);
 
-        printf("Third child: %s\n", data);
+        strcpy(br, data);
+
+        if(!strcmp(br , "break")){
+            printf("Execute: All instructions were executed\n");
+            write(pipes[2][1], br, strlen(br)+1);
+            break;
+        }
+
+        printf("Execute: %s\n", data);
+
+
+        count = split(data, &tokens);
+
+        intTokens = (int *) malloc(count * sizeof(int));
+
+        for(int i = 0; i< count; ++i){
+            intTokens[i] = (int)stringToInt(tokens[i], 10);
+            printf("\tTokens[%d] = %d\n", i, intTokens[i]);
+        }
+
+        opcode = intTokens[0];
+        switch(opcode){
+            case 8: //ADDI
+                rs = intTokens[1];
+                rt = intTokens[2];
+                immd = intTokens[3];
+                registers[rt]= registers[rs] + immd;
+                pcout = 1;
+                break;
+            case 35: //LW
+                rs = intTokens[1];
+                rt = intTokens[2];
+                immd = intTokens[3];
+                memAddr = (registers[rs] + immd) / 4;
+                registers[rt] = memory[memAddr];
+                pcout = 1;
+                break;
+            case 43: //SW
+                rs = intTokens[1];
+                rt = intTokens[2];
+                immd = intTokens[3];
+                memAddr = (registers[rs] + immd) / 4;
+                memory[memAddr] = registers[rt];
+                pcout = 1;
+                break;
+            case 4: //BEQ
+                rs = intTokens[1];
+                rt = intTokens[2];
+                immd = intTokens[3];
+                pcout = registers[rs] == registers[rt] ? immd : 1;
+                break;
+            case 2: //Jump
+                immd = intTokens[1];
+                pcout = immd;
+                break;
+            case 0: //R-Type
+                funct = intTokens[5];
+                rs = intTokens[1];
+                rt = intTokens[2];
+                rd = intTokens[3];
+                pcout = 1;
+                switch(funct){
+                    case 32: //ADD
+                        registers[rd] = registers[rs] + registers[rt];
+                    break;
+                    case 34: //SUB
+                        registers[rd] = registers[rs] - registers[rt];
+                    break;
+                    case 36: //AND
+                        registers[rd] = registers[rs] & registers[rt];
+                    break;
+                    case 37: //OR
+                        registers[rd] = registers[rs] | registers[rt];
+                    break;
+                    case 42: //SLT
+                        registers[rd] = registers[rs] < registers[rt] ? 1:0;
+                    break;
+                    default:
+                        break;
+                }
+            break;
+            default:
+                break;
+        }
+
+        free(intTokens);
+        for(int i =0; i< count;++i)
+        {
+            free(tokens[i]);
+        }
+        free(tokens);
+        
+        int numbers[2] = {opcode, pcout};
+        char* dataToPC;
+        intToString(numbers, 2, &dataToPC);
+        printf("\tData To PC: %s\n", dataToPC);
         
 
-        //write(pipes[2][1], &data, sizeof(int));
-        // close(pipes[2][1]);
-        // close(pipes[1][0]);
+
+        write(pipes[2][1], dataToPC, strlen(dataToPC) + 1);
+
+        free(dataToPC);
         }
+        close(pipes[2][1]);
+        close(pipes[1][0]);
         return 0;
     }
 
@@ -227,30 +264,70 @@ int main(){
     procid[3] = fork();
     if(procid[3] == 0)
     {
-        while(1){
-        int data;
+        //Close unused pipes
         close(pipes[0][0]);
         close(pipes[0][1]);
         close(pipes[1][0]);
         close(pipes[1][1]);
         close(pipes[2][1]);
         close(pipes[3][0]);
-        sleep(3);
-        read(pipes[2][0], &data, sizeof(int));
-        data++;
-        
+        int pc = 0;
+        while(1){
+            char data[20];
+            sleep(3);
+            read(pipes[2][0], &data, 20);
+            if(!strcmp(data , "break")){
+                printf("Program Counter: All instructions were executed\n");
+                write(pipes[3][1], data, strlen(data)+1);
+                break;
+            }
+            
+            char **tokens;
+            int countPar = split(data, &tokens);
 
-        write(pipes[3][1], &data, sizeof(int));
-        // close(pipes[3][1]);
-        // close(pipes[2][0]);
-        printf("Fourth child: %d\n", data);
+            int opcode = (int)stringToInt(tokens[0], 10);
+            int pcoutAdd = (int)stringToInt(tokens[1], 10);
+
+            printf("Program counter: \n\tPC: %d\n\tOpcode: %d\n", pc, opcode);
+
+            switch(opcode){
+                case 0:
+                case 8:
+                case 35:
+                case 43:
+                    pc += pcoutAdd;
+                    break;
+                case 4:
+                    pc += pcoutAdd + 1;
+                    break;
+                case 2:
+                    pc = pcoutAdd;
+                    break;
+                default:
+                    pc +=pcoutAdd;
+                    break;
+            }
+
+            printf("\tNew program counter: %d\n", pc);
+
+             write(pipes[3][1], &pc, sizeof(int));
+
+
+            //Free memory
+            for(int i = 0; i< countPar; ++i)
+            {
+                free(tokens[i]);
+            }
+            free(tokens);
         }
+        close(pipes[3][1]);
+        close(pipes[2][0]);
         return 0;
     }
 
     //Clock sequence?
     else{
-        printf("Parent\n");
+        //printf("Parent\n");
         wait(NULL);
         wait(NULL);
         wait(NULL);
