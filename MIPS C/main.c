@@ -36,11 +36,71 @@ void readlines(char ***instructions, int n, FILE *fp){
 
 }
 
+void intToString(int* numbers, int n, char** instruction){
+    char instString[50] = {'\0'};
+    char interm[20];
+
+    for(int i =0; i< n; i++)
+    {
+        sprintf(interm, "%d", numbers[i]);
+        strcat(instString, interm);
+        if(i != n-1)
+            strcat(instString,"_");
+    }
+
+    (*instruction) = (char*)malloc(strlen(instString) * sizeof(char));
+    (*instruction)[strlen(instString)] = '\0';
+    strncpy((*instruction),instString, strlen(instString));
+
+}
+
+
+int split(char *instruction, char *** tokens){
+    int i, count = 0;
+    for (i=0; i < strlen(instruction); i++)
+    {
+        if(instruction[i] == '_'){
+            count ++;
+        }
+    }
+        // count += (instruction[i] == "_");
+    count++;
+
+    char * token = strtok(instruction, "_");
+    i=0;
+    *tokens = (char **) malloc(count * sizeof(char *));
+    while(token != NULL){
+        (*tokens)[i] = (char *) malloc(strlen(token) * sizeof(char));
+        strncpy((*tokens)[i], token, strlen(token));
+        (*tokens)[i][strlen(token)] = '\0';
+        i++;
+        token= strtok(NULL, "_");
+    }
+
+    if(token)
+        free(token);
+
+    return count;
+}
+
+long  stringToInt(char *number, int base){
+    long result;
+    //char *pEnd;
+
+    result = strtol(number, NULL, base);
+    if(strlen(number)>=16){
+        if(result >=0x7fff){
+            result = result | 0xffffffffffff0000;        
+        }
+    }
+    return result;
+}
+
 
 int main(){
     int pipes[4][2];
     pid_t procid[4];
-    int current_id = 0;
+    //int current_id = 0;
     for(int i = 0; i < 4; ++i){
         if(pipe(pipes[i]) == -1){
             perror("pipe");
@@ -70,8 +130,7 @@ int main(){
             return 0;
         }
         int count = numberOfLines(fp);
-        fclose(fp);
-        fp = fopen("instr.txt", "r");
+        rewind(fp);
         readlines(&instructions, count, fp);
         write(pipes[0][1], instructions[0], strlen(instructions[0]) + 1);
 
@@ -92,7 +151,6 @@ int main(){
     procid[1] = fork();
     if(procid[1] == 0)
     {
-        while(1){
         char data[40];
         close(pipes[0][1]);
         close(pipes[1][0]);
@@ -100,15 +158,42 @@ int main(){
         close(pipes[2][1]);
         close(pipes[3][0]);
         close(pipes[3][1]);
+        char ** tokens;
+        int count;
+        int *decoded;
+        char *instr;
+        while(1){
         sleep(1);
 
         read(pipes[0][0], &data, sizeof(data));
+        count = split(data,&tokens);
 
-        //write(pipes[1][1], &data, sizeof(int));
+        
         // close(pipes[1][1]);
         // close(pipes[0][0]);
+        decoded = (int *)malloc(count * sizeof(int));
 
-        printf("Second child: %s\n", data);
+
+        for(int i = 0; i < count; i++)
+        {
+            decoded[i] = (int)stringToInt(tokens[i], 2);
+            //printf("Instruction decode: %s - %d\n", tokens[i], decoded[i]);
+        }
+
+        intToString(decoded, count, &instr);
+        printf("New instruction: %s\n", instr);
+
+        write(pipes[1][1], instr, strlen(instr)+1);
+
+        //Free memory
+        for(int i = 0; i < count; i++)
+        {
+            free(tokens[i]);
+        }
+        free(tokens);
+        free(decoded);
+        free(instr);
+
         }
         return 0;
     }
@@ -117,7 +202,7 @@ int main(){
     if(procid[2] == 0)
     {
         while(1){
-        int data;
+        char data[40];
         close(pipes[0][0]);
         close(pipes[0][1]);
         close(pipes[1][1]);
@@ -126,14 +211,14 @@ int main(){
         close(pipes[3][1]);
         sleep(2);
 
-        read(pipes[1][0], &data, sizeof(int));
-        data++;
+        read(pipes[1][0], &data, 40);
 
-        write(pipes[2][1], &data, sizeof(int));
+        printf("Third child: %s\n", data);
+        
+
+        //write(pipes[2][1], &data, sizeof(int));
         // close(pipes[2][1]);
         // close(pipes[1][0]);
-
-        printf("Third child: %d\n", data);
         }
         return 0;
     }
