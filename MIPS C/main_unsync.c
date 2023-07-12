@@ -10,14 +10,12 @@ int main(){
             exit(EXIT_FAILURE);
         }
     }
-    //Shared memory if necessary
 
 
     //Instruction fetch
     procid[0] = fork();
     if(procid[0] == 0)
     {
-        
         close(pipes[0][0]);
         close(pipes[1][0]);
         close(pipes[1][1]);
@@ -41,7 +39,7 @@ int main(){
         printf("Instruction fetch:\n\tInstruction address: %d\n\tInstruction: %s\n",0, instructions[0]);
         while(1){
 
-            
+            sleep(4);
             read(pipes[3][0], &pc, sizeof(int));
             if(pc > count-1){
                 printf("Instruction fetch: All instructions were executed\n");
@@ -58,7 +56,7 @@ int main(){
         close(pipes[0][1]);
         close(pipes[3][0]);
         
-        exit(0);
+        return 0;
     }
     
     //Instruction decode
@@ -77,15 +75,16 @@ int main(){
         int *decoded;
         char *instr;
         while(1){
+        sleep(1);
 
         read(pipes[0][0], &data, sizeof(data));
+        printf("Instruction Decode\n\tInstruction received: %s\n", data);
 
         if(!strcmp(data , "break")){
             printf("Instruction decode: All instructions were executed\n");
             write(pipes[1][1], data, strlen(data)+1);
             break;
         }
-        printf("Instruction Decode\n\tInstruction received: %s\n", data);
 
         count = split(data, &tokens);
 
@@ -117,8 +116,7 @@ int main(){
         close(pipes[1][1]);
         close(pipes[0][0]);
 
-        exit(0);
-
+        return 0;
     }
 
     //Execute
@@ -150,6 +148,7 @@ int main(){
         char br[6];
 
         while(1){
+        sleep(2);
 
         read(pipes[1][0], &data, 40);
 
@@ -170,7 +169,7 @@ int main(){
 
         for(int i = 0; i< count; ++i){
             intTokens[i] = (int)stringToInt(tokens[i], 10);
-            // printf("\tFields[%d] = %d\n", i, intTokens[i]);
+            printf("\tTokens[%d] = %d\n", i, intTokens[i]);
         }
 
         opcode = intTokens[0];
@@ -179,76 +178,34 @@ int main(){
                 rs = intTokens[1];
                 rt = intTokens[2];
                 immd = intTokens[3];
-                printf("\tInstr\tRS\tRT\tIMM\n\t%s\t%d\t%d\t%d\n", "ADDI", rs, rt, immd);
-                printf("\tResults:\n\t\tSource Register[%d] = %d\n\t\t", rs, registers[rs]);
-                if(rt == 0){
-                    registers[rt] = 0;
-                }else{
                 registers[rt]= registers[rs] + immd;
-                }
                 pcout = 1;
-                printf("Destination Register[%d] = %d\n\t\tPCout += 1\n", rt, registers[rt]);
                 break;
             case 35: //LW
                 rs = intTokens[1];
                 rt = intTokens[2];
                 immd = intTokens[3];
                 memAddr = (registers[rs] + immd) / 4;
-                printf("\tInstr\tRS\tRT\tIMM\n\t%s\t%d\t%d\t%d\n", " LW", rs, rt, immd);
-                printf("\tResults:\n\t\tSource Register[%d] = %d\t\n\n",rs, registers[rs]);
-                if(rt == 0){
-                    registers[rt] =0;
-                }else{
                 registers[rt] = memory[memAddr];
-                }
                 pcout = 1;
-                printf("Destination Register[%d] = %d\n\t\t"
-                        "Source Memory[%d] = %d\n\t\t"
-                        "PCout += 1\n",
-                        rt, registers[rt], memAddr, memory[memAddr]);
                 break;
             case 43: //SW
                 rs = intTokens[1];
                 rt = intTokens[2];
                 immd = intTokens[3];
-                printf("\tInstr\tRS\tRT\tIMM\n\t%s\t%d\t%d\t%d\n", " SW", rs, rt, immd);
                 memAddr = (registers[rs] + immd) / 4;
                 memory[memAddr] = registers[rt];
                 pcout = 1;
-                printf("\tResults:\n\t\tSource Register[%d] = %d\n\t\t"
-                "Addr Register[%d] = %d\n\t\t"
-                "Destination Memory[%d] = %d\n\t\t"
-                "PCout += 1\n",
-                 rs, registers[rs], rt, registers[rt], memAddr, memory[memAddr]);
                 break;
             case 4: //BEQ
                 rs = intTokens[1];
                 rt = intTokens[2];
                 immd = intTokens[3];
-                printf("\tInstr\tRS\tRT\tIMM\n\t%s\t%d\t%d\t%d\n", " BEQ", rs, rt, immd);
-                if(registers[rs] == registers[rt]){
-                    pcout = immd;
-                    printf("\tResults:\n\t\t"
-                    "Register[%d] = %d\n\t\t"
-                    "Register[%d] = %d\n\t\t"
-                    "Branch to PCout %+d\n",
-                    rs, registers[rs],rd, registers[rd], pcout);
-                }
-                else{
-                    pcout = 0;
-                    printf("\tResults:\n\t\t"
-                    "Register[%d] = %d\n\t\t"
-                    "Register[%d] = %d\n\t\t"
-                    "Branch not executed => PCOut +=1\n",
-                    rs, registers[rs],rd, registers[rd]);
-                }
-
+                pcout = registers[rs] == registers[rt] ? immd : 1;
                 break;
             case 2: //Jump
                 immd = intTokens[1];
                 pcout = immd;
-                printf("\tInstr\tIMM\n\t%s\t%d\n", "  J", immd);
-                printf("\tResults:\n\t\tJump to the address %d\n", immd);
                 break;
             case 0: //R-Type
                 funct = intTokens[5];
@@ -256,62 +213,25 @@ int main(){
                 rt = intTokens[2];
                 rd = intTokens[3];
                 pcout = 1;
-
                 switch(funct){
                     case 32: //ADD
-                        printf("\tInstr\tRS\tRT\tRD\tFUNCT\n\t%s\t%d\t%d\t%d\t%s\n", "R-Type", rs, rt, rd, "ADD"); 
-                        printf("\tResults\n\t\t"
-                            "Source 1 Register[%d] = %d\n\t\t"
-                            "Source 2 Register[%d] = %d\n\t\t",
-                            rs, registers[rs], rt, registers[rt]);
                         registers[rd] = registers[rs] + registers[rt];
                     break;
                     case 34: //SUB
-                        printf("\tInstr\tRS\tRT\tRD\tFUNCT\n\t%s\t%d\t%d\t%d\t%s\n", "R-Type", rs, rt, rd, "SUB");  
-                        printf("\tResults\n\t\t"
-                            "Source 1 Register[%d] = %d\n\t\t"
-                            "Source 2 Register[%d] = %d\n\t\t",
-                            rs, registers[rs], rt, registers[rt]);
                         registers[rd] = registers[rs] - registers[rt];
-
                     break;
                     case 36: //AND
-                        printf("\tInstr\tRS\tRT\tRD\tFUNCT\n\t%s\t%d\t%d\t%d\t%s\n", "R-Type", rs, rt, rd, "AND");  
-                        printf("\tResults\n\t\t"
-                            "Source 1 Register[%d] = %d\n\t\t"
-                            "Source 2 Register[%d] = %d\n\t\t",
-                            rs, registers[rs], rt, registers[rt]);
                         registers[rd] = registers[rs] & registers[rt];
-
                     break;
                     case 37: //OR
-                        printf("\tInstr\tRS\tRT\tRD\tFUNCT\n\t%s\t%d\t%d\t%d\t%s\n", "R-Type", rs, rt, rd, "OR");  
-                        printf("\tResults\n\t\t"
-                            "Source 1 Register[%d] = %d\n\t\t"
-                            "Source 2 Register[%d] = %d\n\t\t",
-                            rs, registers[rs], rt, registers[rt]);
                         registers[rd] = registers[rs] | registers[rt];
-
                     break;
                     case 42: //SLT
-                        printf("\tInstr\tRS\tRT\tRD\tFUNCT\n\t%s\t%d\t%d\t%d\t%s\n", "R-Type", rs, rt, rd, "SLT");  
-                        printf("\tResults\n\t\t"
-                            "Source 1 Register[%d] = %d\n\t\t"
-                            "Source 2 Register[%d] = %d\n\t\t",
-                            rs, registers[rs], rt, registers[rt]);
                         registers[rd] = registers[rs] < registers[rt] ? 1:0;
-
                     break;
                     default:
                         break;
                 }
-                if(rd == 0)
-                {
-                    registers[rd] = 0;
-                }
-                printf("Destination Register[%d] = %d\n\t\t"
-                    "PCOut += 1\n",
-                    rd, registers[rd]); 
             break;
             default:
                 break;
@@ -337,8 +257,7 @@ int main(){
         }
         close(pipes[2][1]);
         close(pipes[1][0]);
-        exit(0);
-
+        return 0;
     }
 
     //Program counter
@@ -355,9 +274,8 @@ int main(){
         int pc = 0;
         while(1){
             char data[20];
+            sleep(3);
             read(pipes[2][0], &data, 20);
-
-            //Break condition
             if(!strcmp(data , "break")){
                 printf("Program Counter: All instructions were executed\n");
                 write(pipes[3][1], data, strlen(data)+1);
@@ -404,72 +322,16 @@ int main(){
         }
         close(pipes[3][1]);
         close(pipes[2][0]);
-        exit(0);
-
+        return 0;
     }
 
     //Clock sequence?
     else{
-        for(int i =0; i<4; ++i){
-            kill(procid[i], SIGSTOP);
-        }
-        int clock = 0;
-        while(1){
-            int status;
-            pid_t terminated = waitpid(-1, &status, WNOHANG);
-
-            if(terminated> 0){
-                wait(NULL);
-                wait(NULL);
-                wait(NULL);
-                wait(NULL);
-                printf("\nAll processes terminated\n");
-                break;
-            }
-            else if(terminated == 0){
-
-            //Instruction Fetch
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
-            kill(procid[0], SIGCONT);
-            kill(procid[1], SIGSTOP);
-            kill(procid[2], SIGSTOP);
-            kill(procid[3], SIGSTOP);
-            //Instruction Decode
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
-
-            kill(procid[0], SIGSTOP);
-            kill(procid[1], SIGCONT);
-            kill(procid[2], SIGSTOP);
-            kill(procid[3], SIGSTOP);
-            //Execute
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
-
-            kill(procid[0], SIGSTOP);
-            kill(procid[1], SIGSTOP);
-            kill(procid[2], SIGCONT);
-            kill(procid[3], SIGSTOP);
-            //Program counter
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
-
-            kill(procid[0], SIGSTOP);
-            kill(procid[1], SIGSTOP);
-            kill(procid[2], SIGSTOP);
-            kill(procid[3], SIGCONT);
-            }
-            else{
-                perror("waitpid");
-                exit(1);
-            }
-
-
-        }
-
         //printf("Parent\n");
-        exit(EXIT_SUCCESS);
+        wait(NULL);
+        wait(NULL);
+        wait(NULL);
+        wait(NULL);
 
     }
     
