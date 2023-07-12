@@ -17,7 +17,7 @@ int main(){
     procid[0] = fork();
     if(procid[0] == 0)
     {
-        
+        //Close unused pipes   
         close(pipes[0][0]);
         close(pipes[1][0]);
         close(pipes[1][1]);
@@ -55,6 +55,10 @@ int main(){
 
             //printf("First child: %d\n", data);
         }
+        for(int i = 0; i < count; ++i){
+            free(instructions[i]);
+        }
+        free(instructions);
         close(pipes[0][1]);
         close(pipes[3][0]);
         
@@ -65,13 +69,15 @@ int main(){
     procid[1] = fork();
     if(procid[1] == 0)
     {
-        char data[40];
+        //Close the unused pipes
         close(pipes[0][1]);
         close(pipes[1][0]);
         close(pipes[2][0]);
         close(pipes[2][1]);
         close(pipes[3][0]);
         close(pipes[3][1]);
+
+        char data[40];
         char ** tokens;
         int count;
         int *decoded;
@@ -195,7 +201,7 @@ int main(){
                 immd = intTokens[3];
                 memAddr = (registers[rs] + immd) / 4;
                 printf("\tInstr\tRS\tRT\tIMM\n\t%s\t%d\t%d\t%d\n", " LW", rs, rt, immd);
-                printf("\tResults:\n\t\tSource Register[%d] = %d\t\n\n",rs, registers[rs]);
+                printf("\tResults:\n\t\tSource Register[%d] = %d\n\t\t",rs, registers[rs]);
                 if(rt == 0){
                     registers[rt] =0;
                 }else{
@@ -317,6 +323,7 @@ int main(){
                 break;
         }
 
+        //Free memory
         free(intTokens);
         for(int i =0; i< count;++i)
         {
@@ -324,6 +331,7 @@ int main(){
         }
         free(tokens);
         
+        //Write to PC
         int numbers[2] = {opcode, pcout};
         char* dataToPC;
         intToString(numbers, 2, &dataToPC);
@@ -332,7 +340,7 @@ int main(){
 
 
         write(pipes[2][1], dataToPC, strlen(dataToPC) + 1);
-
+        //Free memory
         free(dataToPC);
         }
         close(pipes[2][1]);
@@ -413,6 +421,7 @@ int main(){
         for(int i =0; i<4; ++i){
             kill(procid[i], SIGSTOP);
         }
+        const int cycle = 1;
         int clock = 0;
         while(1){
             int status;
@@ -429,31 +438,31 @@ int main(){
             else if(terminated == 0){
 
             //Instruction Fetch
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
+            sleep(cycle);
+            printf("\nClock: #%d\n",clock+=cycle);
             kill(procid[0], SIGCONT);
             kill(procid[1], SIGSTOP);
             kill(procid[2], SIGSTOP);
             kill(procid[3], SIGSTOP);
             //Instruction Decode
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
+            sleep(cycle);
+            printf("\nClock: #%d\n",clock+=cycle);
 
             kill(procid[0], SIGSTOP);
             kill(procid[1], SIGCONT);
             kill(procid[2], SIGSTOP);
             kill(procid[3], SIGSTOP);
             //Execute
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
+            sleep(cycle);
+            printf("\nClock: #%d\n",clock+=cycle);
 
             kill(procid[0], SIGSTOP);
             kill(procid[1], SIGSTOP);
             kill(procid[2], SIGCONT);
             kill(procid[3], SIGSTOP);
             //Program counter
-            sleep(1);
-            printf("\nClock: #%d\n",clock++);
+            sleep(cycle);
+            printf("\nClock: #%d\n",clock+=cycle);
 
             kill(procid[0], SIGSTOP);
             kill(procid[1], SIGSTOP);

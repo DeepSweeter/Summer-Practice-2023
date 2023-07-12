@@ -34,7 +34,6 @@ module MIPS(input clk, input reset);
     wire[31:0] data_mem_out;
 
     //Shift regs, sign extend, muxes, adders
-    //...
     wire [4:0] mux_regbank_out;
     wire [31:0] mux_mainalu_out;
     wire [31:0] mux_datamem_out;
@@ -87,8 +86,8 @@ module MIPS(input clk, input reset);
     ALUDEC alu_con(.aluop(ALUOp), .funct(funct), .alucontrol(ALUConOut));
 
     ADDER add_pc4(.op1(pcout), .op2(32'd4), .dout(add_pc4_out));
+    
     //shifter parametrizat
-	
   	SHIFTER #(.IN_LEN(26), .OUT_LEN(28))shift_jump(.in(instruction[25:0]), .dout(shift_jump_out));  
   	
     ADDER add_address(.op1(shift_adder_out), .op2(add_pc4_out), .dout(add_address_out));

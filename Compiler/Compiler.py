@@ -60,6 +60,7 @@ def compile(codes):
         if ":" in code[1]:
             labels[code[1].lower().replace(":", "")] = code[0]
     for code in codes:
+        #initialize fields
         opcode = ""
         rs = ""
         rt = ""
@@ -72,6 +73,7 @@ def compile(codes):
         addr = code[0]
         instr_split = code[1].lower().split(" ")
         
+        #Check the instruction
         if instr_split[0] in R_TYPES:
             opcode = "000000"
             rs = registers[instr_split[2]]
@@ -79,12 +81,14 @@ def compile(codes):
             rd = registers[instr_split[1]]
             funct = R_TYPES_CODES[instr_split[0]]
             binary_code = opcode + "_" + rs + "_" + rt + "_" + rd + "_" + shamt + "_" + funct +"\n"
+
         elif instr_split[0] == "addi":
             opcode= "001000"
             rs = registers[instr_split[2]]
             rt = registers[instr_split[1]]
             immediate= Bits(int=int(instr_split[3]), length=16).bin
             binary_code = opcode + "_"+ rs + "_" + rt + "_" + immediate + "\n"
+
         elif instr_split[0] == "sw":
             opcode = "101011"
             rs = registers[instr_split[3]]
@@ -105,6 +109,7 @@ def compile(codes):
             rt = registers[instr_split[2]]
             immediate = Bits(int=(labels[instr_split[3]] - addr-1), length=16).bin
             binary_code = opcode + "_"+ rs + "_" + rt + "_" + immediate + "\n"
+
         elif instr_split[0] == "j":
             opcode="000010"
             immediateJ = Bits(int=labels[instr_split[1]], length=26).bin
@@ -113,6 +118,7 @@ def compile(codes):
 
 
 if __name__ == '__main__':
+    #Process the file before calling the compiler function
     assembly_file_name = "code.s" #sys.argv[1]
     try:
         assembly_file = open(assembly_file_name, 'r')

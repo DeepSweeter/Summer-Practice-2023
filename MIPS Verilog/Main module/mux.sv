@@ -1,3 +1,5 @@
+//Multiplexers 5 bits and 32 bits(could have been parametrized)
+
 module MUX_5BIT(input [4:0] in1,
                 input [4:0] in2,
                 input sel,
