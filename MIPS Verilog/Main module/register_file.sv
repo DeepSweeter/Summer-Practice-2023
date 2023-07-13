@@ -21,7 +21,7 @@ module REGISTER_BANK(
   //If the register is different from $zero then write in it the value got on wd3 at the posedge clock
   always@(posedge clk) begin
     if(we3)
-      registers[a3] = (a3 != 0)? wd3 :0;
+      registers[a3] <= (a3 != 0)? wd3 :0;
 
   end
    

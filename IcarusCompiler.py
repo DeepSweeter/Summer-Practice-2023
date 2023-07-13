@@ -22,7 +22,7 @@ if __name__ == '__main__':
     for file in os.listdir(currentFolder):
         if file.endswith(".vcd"):
             try:
-                subprocess.Popen(f"& gtkwave {file}", stderr=subprocess.STDOUT).wait()
+                subprocess.Popen(f"gtkwave {file}", stderr=subprocess.STDOUT).wait()
             except subprocess.CalledProcessError as e:
                 print("Eroare la gtkwave: " + e)
             break

@@ -24,7 +24,7 @@ module DATA_MEMORY(
 
     always@(posedge clk)
         if(we)
-            mem[din>>2] = wd;
+            mem[din>>2] <= wd;
 
 
 

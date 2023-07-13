@@ -416,7 +416,7 @@ int main(){
 
     }
 
-    //Clock sequence?
+    //Clock sequence
     else{
         for(int i =0; i<4; ++i){
             kill(procid[i], SIGSTOP);
