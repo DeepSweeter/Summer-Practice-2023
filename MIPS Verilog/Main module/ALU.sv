@@ -15,8 +15,8 @@ module ALU(input [2:0] ALUControl,
              3'b001: ALUResult = SrcA | SrcB;
              3'b111: ALUResult = SrcA < SrcB? 1: 0;
              default: begin
-                Zero = 1'bx;
-                ALUResult = 32'bx;
+                Zero = 1'b0;
+                ALUResult = 32'b0;
              end
         endcase
     end
